@@ -1,26 +1,51 @@
 # Módulo - 01
 
-Instalando o **kubectl**, que é o programa usado para gerenciamento do cluster.
+## Instalando o kubectl 
+
+Programa usado no gerenciamento do cluster.
 
 [Link da documentação](https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/)
 
 ~~~sh
-root@lab01:~# curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+$ curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
 ~~~
 
 Adicionar permissão de execução no arquivo baixado e mover para o diretório de binários que esteja no PATH.
 
 ~~~sh
-root@lab01:~# chmod +x kubectl && mv kubectl /usr/local/bin/
+$ chmod +x kubectl && sudo mv kubectl /usr/local/bin/
 ~~~
 
 Verificando a versão do kubectl instalada.
 
 ~~~sh
-root@lab01:~# kubectl version
+$ kubectl version
+
 Client Version: v1.35.0
 Kustomize Version: v5.7.1
 The connection to the server localhost:8080 was refused - did you specify the right host or port?
+~~~
+
+### Adicionar o autocomplete 
+
+Apenas para o usuário
+
+~~~sh
+$ echo 'source <(kubectl completion bash)' >>~/.bashrc
+~~~
+
+Para o sistema.
+
+~~~sh
+$ kubectl completion bash | sudo tee /etc/bash_completion.d/kubectl > /dev/null
+$ sudo chmod a+r /etc/bash_completion.d/kubectl
+~~~
+
+Adicionar um alias para o comando `kubectl`.
+
+~~~sh
+$ echo 'alias k=kubectl' >>~/.bashrc
+$ echo 'complete -o default -F __start_kubectl k' >>~/.bashrc
 ~~~
 
 ## Instalando o KIND para criar o cluster kubernetes em contêiners
@@ -30,20 +55,24 @@ The connection to the server localhost:8080 was refused - did you specify the ri
 Download do arquivo binário, adicionar a permissão de execução e mover para o diretório de binários no PATH.
 
 ~~~sh
-root@lab01:~# [ $(uname -m) = x86_64 ] && curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.31.0/kind-linux-amd64 && chmod +x ./kind && mv ./kind /usr/local/bin/kind
+$ [ $(uname -m) = x86_64 ] && \
+curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.31.0/kind-linux-amd64 && \
+chmod +x ./kind && \
+sudo mv ./kind /usr/local/bin/kind
 ~~~
 
 Verificando a versão do kind.
 
 ~~~sh
-root@lab01:~# kind version
+$ kind version
+
 kind v0.31.0 go1.25.5 linux/amd64
 ~~~
 
 ## Instalar o docker
 
 ~~~sh
-root@lab01:~# curl -fsSL https://get.docker.com | bash
+$ curl -fsSL https://get.docker.com | sudo bash
 ~~~
 
 ### Criando um cluster com a opção padrão
@@ -51,7 +80,8 @@ root@lab01:~# curl -fsSL https://get.docker.com | bash
 Dessa forma será criado um cluster com apenas 1 nó e esse será o control-plane. Por padrão o nome do contexto será **kind-kind**.
 
 ~~~sh
-root@lab01:~# kind create cluster
+$ kind create cluster
+
 Creating cluster "kind" ...
  ✓ Ensuring node image (kindest/node:v1.35.0) 🖼
  ✓ Preparing nodes 📦
@@ -70,7 +100,8 @@ Thanks for using kind! 😊
 Obtendo informações sobre os nós do cluster.
 
 ~~~sh
-root@lab01:~# kubectl get nodes
+$ kubectl get nodes
+
 NAME                 STATUS   ROLES           AGE     VERSION
 kind-control-plane   Ready    control-plane   3m15s   v1.35.0
 ~~~
@@ -78,7 +109,7 @@ kind-control-plane   Ready    control-plane   3m15s   v1.35.0
 Excluindo o cluster de testes criado anteriormente
 
 ~~~sh
-kind delete cluster
+$ kind delete cluster
 ~~~
 
 ### Criar um arquivo de configuração para deploy de um cluster multi nodes
@@ -86,8 +117,8 @@ kind delete cluster
 [Documentação](https://kind.sigs.k8s.io/docs/user/configuration/)
 
 ~~~sh
-root@lab01:~# mkdir kind
-root@lab01:~# vim kind/config.yaml
+$ mkdir kind
+$ vim kind/config.yaml
 ~~~
 
 Conteúdo do arquivo *config.yaml*
@@ -105,7 +136,8 @@ nodes:
 Criar o cluster com base no arquivo de configuração
 
 ~~~sh
-root@lab01:~# kind create cluster --config kind/config.yaml
+$ kind create cluster --config kind/config.yaml
+
 Creating cluster "snoopzilla" ...
  ✓ Ensuring node image (kindest/node:v1.35.0) 🖼
  ✓ Preparing nodes 📦 📦 📦
@@ -125,10 +157,73 @@ Thanks for using kind! 😊
 Obtendo as informações sobre os nós do cluster.
 
 ~~~sh
-root@lab01:~# kubectl get nodes
+$ kubectl get nodes
+
 NAME                       STATUS     ROLES           AGE     VERSION
 snoopzilla-control-plane   NotReady   control-plane   7m22s   v1.35.0
 snoopzilla-worker          NotReady   <none>          6m12s   v1.35.0
 snoopzilla-worker2         NotReady   <none>          6m13s   v1.35.0
 ~~~
 
+Dados dos **pods** que estão no namespace `kube-system`.
+
+- A opção `-o wide` exibe informações mais detalhadas.
+- Para exibir todos os pods de todos os namespaces do cluster usar a opção `-A`.
+
+~~~sh
+$ kubectl get pods -n kube-system -o wide
+~~~
+
+Exibir todos os `deployments` do namespace kube-system. Pode usar a abreviação.
+
+~~~sh
+$ kubectl get deployments -n kube-system -o wide
+~~~
+
+### Abreviação dos recursos
+
+| Recurso     | Completo    | Abreviação |
+| ----------- | ----------- | ---------- |
+| Deployment  | deployment  | deploy     |
+| Service     | service     | svc        |
+| Pod         | pod         | po         |
+| ReplicaSet  | replicaset  | **rs**     |
+| DaemonSet   | daemonset   | ds         |
+| StatefulSet | statefulset | sts        |
+| ConfigMap   | configmap   | cm         |
+| Secret      | secret      | secret     |
+
+## Criando o primeiro POD
+
+Criar um pod com nome giropos com base na imagem do nginx.
+
+~~~sh
+$ kubectl run --image nginx --port 8888 giropops
+~~~
+
+Exibindo informações do POD criado.
+
+~~~sh
+$ kubectl get po -o wide
+
+NAME       READY   STATUS    RESTARTS   AGE   IP           NODE                 NOMINATED NODE   READINESS GATES
+giropops   1/1     Running   0          18s   10.244.2.2   snoopzilla-worker2   <none>           <none>
+~~~
+
+Acessando o `pod` internamente.
+
+~~~sh
+$ kubectl exec -ti giropops -- bash
+
+root@giropops:/# 
+~~~
+
+Deletando o `pod` com mínimo de delay possível.
+
+~~~sh
+$ k delete po giropops --now
+~~~
+
+>**Continuação:**  
+>  
+>Day-1 Primeiros passos no Kubernetes com o kubectl, minuto 22:30.
