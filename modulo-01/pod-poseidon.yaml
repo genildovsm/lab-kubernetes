@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    run: poseidon
+  name: poseidon
+spec:
+  containers:
+  - image: nginx:stable-alpine
+    name: poseidon
+    ports:
+    - containerPort: 80
+    resources: {}
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+status: {}
