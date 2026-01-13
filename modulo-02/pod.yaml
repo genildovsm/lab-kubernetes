@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: zeus
+  labels:
+    run: zeus
+spec:
+  containers:
+  - name: zeus-1
+    image: ubuntu
+    resources:
+      requests:
+        cpu: 1
+        memory: 128Mi
+      limits:
+        cpu: 1
+        memory: 128Mi
+    stdin: true
+    tty: true
+    command: ["bash"]
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
