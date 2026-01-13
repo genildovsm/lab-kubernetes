@@ -2,27 +2,27 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: deploy-financeiro
-  name: deploy-financeiro
-  namespace: financeiro
+    app: rolling-update
+  name: rolling-update
+  namespace: narnia
 spec:
-  replicas: 10
+  replicas: 5 
   selector:
     matchLabels:
-      app: deploy-financeiro
+      app: rolling-update
   strategy: 
     type: RollingUpdate
     rollingUpdate:
       maxSurge: 1
-      maxUnavailable: 1
+      maxUnavailable: 2
   template:
     metadata:
       labels:
-        app: deploy-financeiro
+        app: rolling-update
     spec:
       containers:
-      - image: nginx:stable-alpine
-        name: financeiro
+      - image: nginx@sha256:284999d967248984ccd9fffa669c0c49b923e00de28d4c43f5b8c621d881eb44
+        name: narnia
         resources:
           limits:
             cpu: 1

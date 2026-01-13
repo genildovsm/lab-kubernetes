@@ -223,7 +223,3 @@ Deletando o `pod` com mínimo de delay possível.
 ~~~sh
 $ k delete po giropops --now
 ~~~
-
->**Continuação:**  
->  
->Day-1 Primeiros passos no Kubernetes com o kubectl, minuto 22:30.

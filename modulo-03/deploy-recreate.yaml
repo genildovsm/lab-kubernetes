@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: deploy-recreate
+  name: deploy-recreate
+spec:
+  replicas: 5 
+  selector:
+    matchLabels:
+      app: deploy-recreate
+  revisionHistoryLimit: 10
+  strategy: 
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: deploy-recreate
+    spec:
+      containers:
+      - image: nginx:stable-alpine3.23
+        name: nginx
+        ports:
+        - containerPort: 80
+        resources:
+          limits:
+            cpu: 1
+            memory: 128Mi
+          requests:
+            cpu: 1
+            memory: 64Mi
