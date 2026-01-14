@@ -19,7 +19,7 @@ spec:
         app: nginx-deploy
     spec:
       containers:
-      - image: nginx:1.19.1
+      - image: nginx:stable-alpine
         name: nginx
         resources: 
           limits:
@@ -33,7 +33,27 @@ spec:
         livenessProbe:
           tcpSocket:
             port: 80
-          initialDelaySeconds: 10   # inicia o teste após 10s
-          timeoutSeconds: 5         # 5s por tentativa
-          failureThreshold: 3       # limite de 3 falhas
-          periodSeconds: 10         # testa a cada 10s
+          initialDelaySeconds: 30   # inicia o teste após 30s
+          timeoutSeconds: 5         # aguarda até 5s por tentativa
+          failureThreshold: 2       # limite de 2 falhas
+          periodSeconds: 60         # testa a cada 60s
+        readinessProbe:             # se falhar a conexão é interrompida
+          exec:
+            command:
+              - sh
+              - -c
+              - |
+                pidof nginx > /dev/null && \
+                curl -sf --user "kube.probe" -IH "User-Agent: ReadinessProbe - ${HOSTNAME}" http://localhost > /dev/null
+          initialDelaySeconds: 10
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 2
+          periodSeconds: 25
+        startupProbe:               # executado somente na inicialização
+          tcpSocket:      
+            port: 80
+          initialDelaySeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 2
+

@@ -111,6 +111,10 @@ Garante que os Pods estão executando corretamente.
 
 ### Liveness
 
+~~~sh
+kubectl explain deployments.spec.template.spec.containers.livenessProbe
+~~~
+
 Monitora se o pod continua respondendo. No exemplo a seguir o teste de health check é executado:
 
 - testar conectividade TCP na porta 80 
@@ -241,8 +245,33 @@ A rotação é feita fora do Kubernetes, no Node.
 
 ### Startup
 
-Executa um teste no início da execução do Pod
+Executa um teste no início da execução do Pod (somente 1 vez no início)
+
+~~~sh
+kubectl explain deployments.spec.template.spec.containers.startupProbe
+~~~
+
+- Enquanto startupProbe estiver falhando:
+  - liveness é ignorada
+  - Evita restart loop em aplicações lentas
+
+Regra principal da startupProbe
+
+- Enquanto a startupProbe não tiver sucesso:
+  - livenessProbe é IGNORADA
+  - readinessProbe é IGNORADA
+  - Apenas a startupProbe é avaliada
+
+Isso evita restart loop durante inicialização lenta.
 
 ### Readiness
 
-Verifica se o pod já está pronto para receber requisição
+- Verifica continuamente se o pod está apto a receber requisição.
+
+Ver parâmetros:
+
+~~~sh
+kubectl explain deployments.spec.template.spec.containers.readinessProbe
+~~~
+
+**Em caso de falha:** Readiness remove o Pod do tráfego, sem parar ou reiniciar o container.
