@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: nginx-deploy
+  name: nginx-deploy
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      app: nginx-deploy
+  strategy: 
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 2
+  template:
+    metadata:
+      labels:
+        app: nginx-deploy
+    spec:
+      containers:
+      - image: nginx:1.19.1
+        name: nginx
+        resources: 
+          limits:
+            cpu: 1
+            memory: 128Mi
+          requests:
+            cpu: 1
+            memory: 64Mi
+        ports:
+        - containerPort: 80
+        livenessProbe:
+          tcpSocket:
+            port: 80
+          initialDelaySeconds: 10   # inicia o teste após 10s
+          timeoutSeconds: 5         # 5s por tentativa
+          failureThreshold: 3       # limite de 3 falhas
+          periodSeconds: 10         # testa a cada 10s

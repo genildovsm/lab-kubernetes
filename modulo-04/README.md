@@ -111,7 +111,133 @@ Garante que os Pods estão executando corretamente.
 
 ### Liveness
 
-Monitora se o pod continua respondendo
+Monitora se o pod continua respondendo. No exemplo a seguir o teste de health check é executado:
+
+- testar conectividade TCP na porta 80 
+- aguardar 10s antes do primeiro teste, para que o pod tenha tempo de carregar seu processo
+- executyar o teste a cada 20 segundos
+- considerar falha se não houver resposta em até 5 segundos (por tentativa)
+- reiniciar o container após 3 falhas consecutivas
+
+~~~yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: nginx-deploy
+  name: nginx-deploy
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      app: nginx-deploy
+  strategy: 
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 2
+  template:
+    metadata:
+      labels:
+        app: nginx-deploy
+    spec:
+      containers:
+      - image: nginx:1.19.1
+        name: nginx
+        resources: 
+          limits:
+            cpu: 1
+            memory: 128Mi
+          requests:
+            cpu: 1
+            memory: 64Mi
+        ports:
+        - containerPort: 80
+        livenessProbe:
+          httpGet:
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 20
+          timeoutSeconds: 5
+          failureThreshold: 3
+~~~
+
+Testando se a porta está aceitando conexão enviando apenas SYN ACK. O kubelet apenas tenta abrir uma conexão TCP na porta 80 do container.
+
+- kubelet faz um SYN → SYN/ACK → ACK
+- se a conexão for aceita → probe SUCESSO
+- se falhar ou expirar → probe FALHA
+- nenhuma requisição HTTP é enviada
+- Como o tcpSocket não executa HTTP, o NGINX não gera entrada de log
+
+~~~yaml
+livenessProbe:
+          tcpSocket:
+            port: 80
+~~~
+
+**Onde eu posso ver falhas do livenessProbe?**
+
+Os eventos ficam no Node, não no container:
+
+~~~sh
+kubectl describe pod <pod-name>
+~~~
+
+Ou nos eventos:
+
+~~~sh
+kubectl get events --sort-by=.metadata.creationTimestamp
+~~~
+
+**Forma correta de ver os logs no Kubernetes**
+
+~~~sh
+kubectl logs <pod-name> -c webapp
+~~~
+
+Em Kubernetes, logs pertencem ao container runtime, não ao filesystem do container.
+
+**Onde os logs ficam de verdade**
+
+O container não gerencia logs. O node gerencia.
+
+Exemplo (containerd)
+
+~~~
+/var/log/pods/<namespace>_<pod>_<uid>/<container>/0.log
+~~~
+
+Ou
+
+~~~
+/var/log/containers/<pod>_<namespace>_<container>-<container-id>.log
+~~~
+
+**Rotação e limpeza:**
+
+Docker
+
+~~~json
+{
+  "log-driver": "json-file",
+  "log-opts": {
+    "max-size": "10m",
+    "max-file": "5"
+  }
+}
+~~~
+
+Containerd (/etc/containerd/config.toml)
+
+~~~toml
+[plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
+  SystemdCgroup = true
+
+[plugins."io.containerd.grpc.v1.cri".containerd]
+  max_container_log_line_size = 16384
+~~~
+
+A rotação é feita fora do Kubernetes, no Node.
 
 ### Startup
 
