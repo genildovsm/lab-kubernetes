@@ -180,18 +180,25 @@ Exibir todos os `deployments` do namespace kube-system. Pode usar a abreviação
 $ kubectl get deployments -n kube-system -o wide
 ~~~
 
-### Abreviação dos recursos
+**DICA:** Para listar todos os recursos e suas respectivas abreviações e particularidades, use o comando a seguir:
 
-| Recurso     | Completo    | Abreviação |
-| ----------- | ----------- | ---------- |
-| Deployment  | deployment  | deploy     |
-| Service     | service     | svc        |
-| Pod         | pod         | po         |
-| ReplicaSet  | replicaset  | **rs**     |
-| DaemonSet   | daemonset   | ds         |
-| StatefulSet | statefulset | sts        |
-| ConfigMap   | configmap   | cm         |
-| Secret      | secret      | secret     |
+~~~sh
+$ kubectl api-resources | less
+
+NAME                                SHORTNAMES   APIVERSION                        NAMESPACED   KIND
+bindings                                         v1                                true         Binding
+componentstatuses                   cs           v1                                false        ComponentStatus
+configmaps                          cm           v1                                true         ConfigMap
+endpoints                           ep           v1                                true         Endpoints
+events                              ev           v1                                true         Event
+limitranges                         limits       v1                                true         LimitRange
+namespaces                          ns           v1                                false        Namespace
+nodes                               no           v1                                false        Node
+persistentvolumeclaims              pvc          v1                                true         PersistentVolumeClaim
+persistentvolumes                   pv           v1                                false        PersistentVolume
+pods                                po           v1                                true         Pod
+...
+~~~
 
 ## Criando o primeiro POD
 
