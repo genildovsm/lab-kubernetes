@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    pvc: meu-primeiro-pvc
+  name: meu-pvc
+spec:
+  accessMode:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: armazem
+  selector:
+    matchLabels:
+    storage: nfs
+

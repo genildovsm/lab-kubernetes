@@ -150,3 +150,64 @@ spec:
     path: /mnt/nfs
   storageClassName: armazem
 ~~~
+
+## Persistent Volume Claim
+
+O **PVC** é uma solicitação de armazenamento feita pelos usuários ou aplicativos no cluster Kubernetes. Ele permite que os usuários solicitem um volume específico, com base em tamanho, tipo de armazenamento e outras características. O PVC age como uma "assinatura" que reivindica um PV para ser usado por um contêiner. O Kubernetes tenta associar automaticamente um PVC a um PV compatível, garantindo que o armazenamento seja alocado corretamente.  
+
+Todo PVC é associado a um Storage Class ou a um Persistent Volume. O Storage Class é um objeto que descreve e define diferentes classes de armazenamento disponíveis no cluster. Já o Persistent Volume é um recurso que representa um volume de armazenamento disponível para ser usado pelo cluster.
+
+- Manifesto de deployment do Redis usando PVC.
+
+~~~yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: redis
+  name: redis-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app:
+    spec:
+      containers:
+        - image: redis
+          name: redis
+          ports:
+            - containerPort: 6379
+          volumeMounts:
+            - name: redis-data
+              mountPath: /data
+      volumes:
+        - name: redis-data
+          persistentVolumeClaim:
+            claimName: meu-pvc
+~~~
+
+Manifesto de um Pod do nginx usando PVC.
+
+~~~yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-pod
+spec:
+  containers:
+    - name: nginx
+      image: nginx:stable-alpine
+      ports:
+        - containerPort: 80
+      volumeMounts:
+        - name: meu-pvc
+          mountPath: /usr/share/nginx/html
+  volumes:
+    - name: meu-pvc
+      persistentVolumeClaim:
+        claimName: meu-pvc
+~~~
