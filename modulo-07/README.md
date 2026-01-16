@@ -166,3 +166,35 @@ nginx.default.svc.cluster.local
 → lista de IPs dos Pods
 ~~~
 
+## Services
+
+Os **services** utilizam as **labels** como referência para **redirecionamento das requisições**.
+
+Tipos de services: 
+- ClusterIP 
+  - Expõe o Service em um IP interno no cluster. Este tipo torna o Service acessível apenas dentro do cluster.
+- NodePort 
+  - Expõe o Service na mesma porta de cada Node selecionado no cluster usando NAT. Torna o Service acessível de fora do cluster usando
+- LoadBalancer 
+  - Cria um balanceador de carga externo no ambiente de nuvem atual (se suportado) e atribui um IP fixo, externo ao cluster, ao Service.
+- ExternalName
+  - Mapeia o Service para o conteúdo do campo externalName (por exemplo, foo.bar.example.com), retornando um registro CNAME com seu valor.
+
+### NodePort
+
+Criando um deployment via linha de comando e expondo os pods de forma simples.
+
+~~~sh
+$ kubectl create deploy --image nginx:stable-alpine --replicas=1 webapp
+$ kubectl expose deployment webapp --port 8888
+~~~
+
+Verificando o serviço criado pela opção expose. O tipo padrão quando não especificado é **ClusterIP.**
+
+~~~sh
+$ kubectl get svc
+NAME         TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)    AGE
+kubernetes   ClusterIP   10.96.0.1      <none>        443/TCP    54m
+webapp       ClusterIP   10.96.74.121   <none>        8888/TCP   6s   <------ service criado.
+~~~
+
