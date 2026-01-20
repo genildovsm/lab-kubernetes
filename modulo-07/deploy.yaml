@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: girafa
+  name: girafa
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: girafa
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: girafa
+    spec:
+      containers:
+      - image: nginx:stable-alpine
+        name: nginx
+        resources: {}
+status: {}
