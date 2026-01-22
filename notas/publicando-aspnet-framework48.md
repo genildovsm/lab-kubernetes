@@ -214,4 +214,3 @@ dotnet publish src/MinhaWebApp/MinhaWebApp.csproj -c Release --no-build -o ./out
 
 ✔ Evita recompilação  
 ✔ Build já validado  
-
