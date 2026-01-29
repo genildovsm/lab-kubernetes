@@ -20,4 +20,3 @@ nodes:
 # Workers
 - role: worker
 - role: worker
-- role: worker

@@ -4,14 +4,14 @@ metadata:
   name: giropops-senhas
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
-    kubernetes.io/ingress.class: "nginx"
 spec:
+  ingressClassName: "nginx"
   rules:
   - host: localhost
     http:
       paths:
-      - pathType: Prefix
-        path: /giropops-senhas        
+      - path: /giropops-senhas
+        pathType: Prefix        
         backend:
           service:
             name: giropops-senhas

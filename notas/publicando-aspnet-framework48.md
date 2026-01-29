@@ -214,3 +214,52 @@ dotnet publish src/MinhaWebApp/MinhaWebApp.csproj -c Release --no-build -o ./out
 
 ✔ Evita recompilação  
 ✔ Build já validado  
+
+## Dockerfile para ASP.NET Core 8 Web API 
+
+Deploy em pod do kubernetes.
+
+~~~yaml
+# ==============================
+# Build
+# ==============================
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+
+# Copia csproj e restaura dependências
+COPY *.csproj .
+RUN dotnet restore
+
+# Copia o restante do código
+COPY . .
+RUN dotnet publish -c Release -o /app/publish
+
+# ==============================
+# Runtime
+# ==============================
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
+WORKDIR /app
+
+# Configura a porta correta para Kubernetes
+ENV ASPNETCORE_URLS=http://+:5000
+
+# Copia os binários publicados
+COPY --from=build /app/publish .
+
+# Porta informativa (não expõe nada sozinho)
+EXPOSE 5000
+
+# Executa a aplicação
+ENTRYPOINT ["dotnet", "MinhaApi.dll"]
+~~~
+
+### Diferenças importantes 
+
+| ASP.NET Core       | ASP.NET Framework |
+| ------------------ | ----------------- |
+| Linux ou Windows   | Apenas Windows    |
+| Kestrel            | IIS obrigatório   |
+| Porta configurável | Porta fixa (80)   |
+| ASPNETCORE_URLS    | não existe        |
+| Leve               | Mais pesado       |
+

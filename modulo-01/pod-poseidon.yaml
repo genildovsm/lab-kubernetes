@@ -10,7 +10,12 @@ spec:
     name: poseidon
     ports:
     - containerPort: 80
-    resources: {}
+    resources: 
+      limits:
+        cpu: "1"
+        memory: 128Mi
+      requests:
+        cpu: "500m"
+        memory: 64Mi
   dnsPolicy: ClusterFirst
   restartPolicy: Always
-status: {}
